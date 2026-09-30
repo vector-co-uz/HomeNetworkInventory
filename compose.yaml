@@ -1,11 +1,10 @@
 services:
   hni:
-    build: .
-    image: home-network-inventory:local
+    image: ghcr.io/vector-co-uz/homenetworkinventory:latest
     restart: unless-stopped
     init: true
     ports:
-      - "${HNI_BIND_ADDRESS:-127.0.0.1}:${HNI_PORT:-8420}:8420"
+      - "${HNI_PORT:-8420}:8420"
     environment:
       DATABASE_URL: sqlite:////data/home_network.db
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
