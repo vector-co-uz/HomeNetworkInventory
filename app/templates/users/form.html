@@ -13,7 +13,7 @@
 <div class="alert alert-danger" role="alert">{{ error }}</div>
 {% endif %}
 
-{# ---------- Основная форма пользователя ---------- #}
+{# ---------- Main user form ---------- #}
 <form method="post" action="{{ form_action }}" id="user-form">
     <div class="card info-card section-basic mb-3">
         <div class="card-header">
@@ -115,6 +115,14 @@
                     {{ t('users.form.perm.can_change_passwords') }}
                 </label>
             </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="can_change_own_password"
+                       name="can_change_own_password"
+                       {% if fd.can_change_own_password %}checked{% endif %}>
+                <label class="form-check-label" for="can_change_own_password">
+                    {{ t('users.form.perm.can_change_own_password') }}
+                </label>
+            </div>
             <div class="form-text mt-2">
                 {{ t('users.form.hint.admin_perms') }}
             </div>
@@ -127,7 +135,7 @@
     </div>
 </form>
 
-{# ---------- Homes (вне основной формы, чтобы не было вложенных форм) ---------- #}
+{# ---------- Homes (outside main form to avoid nesting) ---------- #}
 {% if is_edit and target_user and target_user.role != 'admin' %}
 <div class="card info-card section-ports mb-3">
     <div class="card-header">

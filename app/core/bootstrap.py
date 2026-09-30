@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 
+from app.core.constants import ROLE_ADMIN
 from app.core.security import hash_password
 from app.database import SessionLocal
 from app.models.user import User
+
 
 def ensure_default_admin() -> None:
     db: Session = SessionLocal()
@@ -13,7 +15,7 @@ def ensure_default_admin() -> None:
         admin = User(
             username="Admin",
             password_hash=hash_password("Admin"),
-            role="admin",
+            role=ROLE_ADMIN,
             can_edit=True,
             can_view_passwords=True,
             can_change_passwords=True,

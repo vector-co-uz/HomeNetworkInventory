@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.core.constants import ROLE_USER
 from app.core.deps import require_admin
 from app.core.exceptions import ValidationError
 from app.core.templating import render
@@ -40,7 +41,7 @@ def new_user_form(
         user=user,
         form_action="/users/new",
         is_edit=False,
-        form_data={},
+        form_data={"can_change_own_password": True, "is_active": True, "theme": "auto", "language": "en"},
         target_user=None,
         all_sites=[],
         assigned_sites=[],
@@ -64,6 +65,7 @@ async def new_user_submit(
             can_edit=data["can_edit"],
             can_view_passwords=data["can_view_passwords"],
             can_change_passwords=data["can_change_passwords"],
+            can_change_own_password=data["can_change_own_password"],
             must_change_password=data["must_change_password"],
             is_active=data["is_active"],
             language=data["language"],
@@ -109,6 +111,7 @@ def edit_user_form(
         "can_edit": target.can_edit,
         "can_view_passwords": target.can_view_passwords,
         "can_change_passwords": target.can_change_passwords,
+        "can_change_own_password": target.can_change_own_password,
         "is_active": target.is_active,
         "language": target.language,
         "theme": target.theme,
@@ -153,6 +156,7 @@ async def edit_user_submit(
             can_edit=data["can_edit"],
             can_view_passwords=data["can_view_passwords"],
             can_change_passwords=data["can_change_passwords"],
+            can_change_own_password=data["can_change_own_password"],
             is_active=data["is_active"],
             language=data["language"],
             theme=data["theme"],
@@ -309,10 +313,11 @@ def _collect_form(form) -> dict:
     return {
         "username": (form.get("username") or "").strip(),
         "password": (form.get("password") or "").strip(),
-        "role": (form.get("role") or "user").strip().lower(),
+        "role": (form.get("role") or ROLE_USER).strip().lower(),
         "can_edit": form.get("can_edit") == "on",
         "can_view_passwords": form.get("can_view_passwords") == "on",
         "can_change_passwords": form.get("can_change_passwords") == "on",
+        "can_change_own_password": form.get("can_change_own_password") == "on",
         "must_change_password": form.get("must_change_password") == "on",
         "is_active": form.get("is_active") == "on",
         "language": (form.get("language") or "en").strip().lower(),

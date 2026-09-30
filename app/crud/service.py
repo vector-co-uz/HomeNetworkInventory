@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
+from app.core.constants import VALID_SERVICE_PROTOCOLS
 from app.core.exceptions import ValidationError
 from app.models.device import Device
 from app.models.service import Service
 
-VALID_PROTOCOLS = {"http", "https", "rtsp", "ssh", "other"}
 
 def list_by_device(db: Session, device_id: int) -> list[Service]:
     return (
@@ -28,21 +28,20 @@ def _validate(
 
     if protocol is not None and protocol.strip():
         protocol = protocol.strip().lower()
-        if protocol not in VALID_PROTOCOLS:
+        if protocol not in VALID_SERVICE_PROTOCOLS:
             raise ValidationError(
                 f"Invalid protocol: {protocol}. "
-                f"Allowed: {', '.join(sorted(VALID_PROTOCOLS))}",
+                f"Allowed: {', '.join(sorted(VALID_SERVICE_PROTOCOLS))}",
                 field="protocol",
             )
     else:
         protocol = None
 
-    if port is not None:
-        if not isinstance(port, int) or port < 1 or port > 65535:
-            raise ValidationError(
-                f"Port must be between 1 and 65535",
-                field="port",
-            )
+    if port is not None and (not isinstance(port, int) or port < 1 or port > 65535):
+        raise ValidationError(
+            "Port must be between 1 and 65535",
+            field="port",
+        )
 
     return name, protocol, port
 

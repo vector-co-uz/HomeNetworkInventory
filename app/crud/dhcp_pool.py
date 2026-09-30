@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 
+from app.core.constants import DHCP_POOL_TYPE_DYNAMIC, VALID_DHCP_POOL_TYPES
 from app.core.exceptions import ValidationError
-from app.core.validation import validate_ipv4, validate_same_subnet
+from app.core.validation import validate_ipv4
 from app.models.device import Device
 from app.models.dhcp_pool import DhcpPool
 
-VALID_TYPES = {"dynamic", "fixed"}
 
 def list_by_device(db: Session, device_id: int) -> list[DhcpPool]:
     return (
@@ -26,7 +26,7 @@ def create(
     device_id: int,
     start_ip: str,
     end_ip: str,
-    type: str = "dynamic",
+    type: str = DHCP_POOL_TYPE_DYNAMIC,
     name: str | None = None,
     gateway: str | None = None,
     dns: str | None = None,
@@ -36,9 +36,9 @@ def create(
         raise ValidationError("Device not found", field="device_id")
 
     type = (type or "").strip().lower()
-    if type not in VALID_TYPES:
+    if type not in VALID_DHCP_POOL_TYPES:
         raise ValidationError(
-            f"Invalid pool type: {type}. Allowed: {', '.join(sorted(VALID_TYPES))}",
+            f"Invalid pool type: {type}. Allowed: {', '.join(sorted(VALID_DHCP_POOL_TYPES))}",
             field="type",
         )
 
@@ -58,10 +58,7 @@ def create(
     else:
         gateway = None
 
-    if dns is not None and dns.strip():
-        dns = validate_ipv4(dns, field="dns")
-    else:
-        dns = None
+    dns = validate_ipv4(dns, field="dns") if dns is not None and dns.strip() else None
 
     pool = DhcpPool(
         device_id=device_id,
@@ -93,9 +90,9 @@ def update(
         raise ValidationError("DHCP pool not found", field="id")
 
     type = (type or "").strip().lower()
-    if type not in VALID_TYPES:
+    if type not in VALID_DHCP_POOL_TYPES:
         raise ValidationError(
-            f"Invalid pool type: {type}. Allowed: {', '.join(sorted(VALID_TYPES))}",
+            f"Invalid pool type: {type}. Allowed: {', '.join(sorted(VALID_DHCP_POOL_TYPES))}",
             field="type",
         )
 
@@ -115,10 +112,7 @@ def update(
     else:
         gateway = None
 
-    if dns is not None and dns.strip():
-        dns = validate_ipv4(dns, field="dns")
-    else:
-        dns = None
+    dns = validate_ipv4(dns, field="dns") if dns is not None and dns.strip() else None
 
     pool.name = name or None
     pool.start_ip = start_ip
