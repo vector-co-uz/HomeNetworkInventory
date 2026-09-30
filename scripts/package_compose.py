@@ -10,10 +10,15 @@ def build(image: str, output: Path) -> Path:
         raise ValueError('Expected a lowercase GHCR image with a sha256 digest')
     root = Path(__file__).resolve().parents[1]
     compose = (root / 'compose.yaml').read_text(encoding='utf-8')
-    compose = compose.replace('    build: .\n', '')
-    compose = compose.replace('    image: home-network-inventory:local\n',
-                              f'    image: {image}\n')
-    if '    build:' in compose or f'    image: {image}\n' not in compose:
+    # Source compose files may either build the checkout with a local image
+    # tag, or already point at the published mutable tag. Normalize both to
+    # the immutable image supplied by the release workflow.
+    compose, build_count = re.subn(r'^    build: \.\r?\n', '', compose, flags=re.MULTILINE)
+    compose, image_count = re.subn(
+        r'^    image: (?:home-network-inventory:local|ghcr\.io/vector-co-uz/homenetworkinventory:latest)\r?$',
+        f'    image: {image}', compose, flags=re.MULTILINE)
+    if ('    build:' in compose or image_count != 1 or
+            re.search(r'^    image: ', compose, flags=re.MULTILINE) is None):
         raise ValueError('Unexpected source Compose layout; update the packager')
     files = {
         'compose.yaml': compose,
