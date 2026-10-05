@@ -5,6 +5,23 @@ import re
 import zipfile
 
 
+PACKAGE_README = """# Home Network Inventory - Docker Compose
+
+1. Copy `.env.example` to `.env`.
+2. Generate a random `SESSION_SECRET` containing at least 32 characters.
+3. Set `SESSION_HTTPS_ONLY=false` for plain HTTP or `true` behind HTTPS.
+4. Start the application:
+
+   docker compose pull
+   docker compose up -d
+
+The SQLite database is stored in the named `hni_data` volume.
+Do not run `docker compose down -v` unless you intend to delete that data.
+
+The exact immutable image used by this package is recorded in `IMAGE.txt`.
+"""
+
+
 def build(image: str, output: Path) -> Path:
     if not re.fullmatch(r'ghcr\.io/[a-z0-9._/-]+@sha256:[a-f0-9]{64}', image):
         raise ValueError('Expected a lowercase GHCR image with a sha256 digest')
@@ -23,8 +40,7 @@ def build(image: str, output: Path) -> Path:
     files = {
         'compose.yaml': compose,
         '.env.example': (root / '.env.example').read_text(encoding='utf-8'),
-        'README.md': (root / 'docs/COMPOSE-PACKAGE.md').read_text(encoding='utf-8'),
-        'DOCKER.md': (root / 'docs/DOCKER.md').read_text(encoding='utf-8'),
+        'README.md': PACKAGE_README,
         'LICENSE': (root / 'LICENSE').read_text(encoding='utf-8'),
         'IMAGE.txt': image + '\n',
     }

@@ -1,6 +1,7 @@
 services:
   hni:
-    image: ghcr.io/vector-co-uz/homenetworkinventory:latest
+    build: .
+    image: home-network-inventory:local
     restart: unless-stopped
     init: true
     ports:

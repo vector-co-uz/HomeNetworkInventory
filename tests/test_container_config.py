@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROBE = r'''
 import os
 from fastapi.testclient import TestClient
-from app.main import app
+from docker.container_app import app
 from app.database import SessionLocal, engine
 from app.models.site import Site
 from app.models.user import User
@@ -57,12 +57,12 @@ class ContainerConfigTests(unittest.TestCase):
     def test_requires_secret(self):
         for value in ['', 'short']:
             env = dict(os.environ, SESSION_SECRET=value)
-            result = self.run_code('import app.config', env, success=False)
+            result = self.run_code('import docker.container_app', env, success=False)
             self.assertIn('Set SESSION_SECRET', result.stderr)
 
     def test_rejects_invalid_boolean(self):
         env = dict(os.environ, SESSION_SECRET='x' * 48, SESSION_HTTPS_ONLY='typo')
-        result = self.run_code('import app.config', env, success=False)
+        result = self.run_code('import docker.container_app', env, success=False)
         self.assertIn('SESSION_HTTPS_ONLY must be', result.stderr)
 
     def test_http_https_and_database_persistence(self):
