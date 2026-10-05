@@ -1,0 +1,21 @@
+services:
+  hni:
+    image: ghcr.io/vector-co-uz/homenetworkinventory:latest
+    restart: unless-stopped
+    init: true
+    ports:
+      - "${HNI_PORT:-8420}:8420"
+    environment:
+      DATABASE_URL: sqlite:////data/home_network.db
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-false}
+      SESSION_TIMEOUT_SECONDS: ${SESSION_TIMEOUT_SECONDS:-7200}
+    volumes:
+      - hni_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  hni_data:
